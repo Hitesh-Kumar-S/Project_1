@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Request Confirmation</title>
+    <style>
+        :root {
+            --primary-color: #4B7BE5;
+            --accent-color: #FFB545;
+            --bg-color: #f6f9fc;
+            --text-color: #333;
+            --form-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #f0f0f0;
+            --form-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .confirmation-box {
+            background-color: var(--form-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: #2e7d32;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            color: var(--text-color);
+            margin: 10px 0;
+        }
+
+        .button-wrapper {
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #005fa3;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background-color: #365fcf;
+        }
+
+        .time-info {
+            margin-top: 15px;
+            font-size: 16px;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+<button class="toggle-btn" onclick="toggleDarkMode()">🌓</button>
+
+<div class="confirmation-box">
+    <h2>Request Submitted Successfully ✅</h2>
+    <p>Your print request has been recorded.</p>
+    <p>Thank you for using our service!</p>
+    <p>Please hand over the payment to the admin when you collect your document.</p>
+
+    <!-- Time and Date -->
+    <div class="time-info">
+        <div id="time"></div>
+        <div id="date"></div>
+    </div>
+
+    <div class="button-wrapper">
+        <form th:action="@{/request}" method="get">
+            <button type="submit">Make Another Request</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem("darkMode", isDark ? "enabled" : "disabled");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem("darkMode") === "enabled") {
+            document.body.classList.add("dark-mode");
+        }
+    });
+
+    function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const time = `${hours}:${minutes}:${seconds}`;
+        document.getElementById('time').innerText = `Current Time: ${time}`;
+
+        const day = now.getDate();
+        const month = now.getMonth() + 1; // Months are 0-indexed
+        const year = now.getFullYear();
+        const date = `${day}-${month}-${year}`;
+        document.getElementById('date').innerText = `Date: ${date}`;
+    }
+
+    setInterval(updateTime, 1000); // Update time every second
+    updateTime(); // Initial call to display the time immediately
+</script>
+
+</body>
+</html>
