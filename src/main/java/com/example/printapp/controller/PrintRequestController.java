@@ -12,63 +12,69 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class PrintRequestController {
 
+    private static final double COLOR_RATE = 3.0;
+    private static final double BW_RATE = 2.0;
+
     @Autowired
     private PrintRequestRepository printRequestRepository;
 
-    // This method handles the GET request to show the form where users can enter the print request details
+    // Show the request form
     @GetMapping("/request")
     public String showRequestForm(Model model) {
         model.addAttribute("printRequest", new PrintRequest());
-        return "request";  // Returns the request.html page
+        return "request";
     }
 
-    // This method handles the form submission and saves the print request to the database
+    // Handle form submission and show submit.html (summary)
     @PostMapping("/submitRequest")
     public String submitRequest(@ModelAttribute PrintRequest printRequest, Model model) {
-        if (printRequest != null && isValidPrintRequest(printRequest)) {
-            String color = printRequest.getColor();
+        sanitizeInput(printRequest);
 
-            // Calculate amount based on color and pages
+        if (printRequest != null && isValidPrintRequest(printRequest)) {
             double amount = calculateAmount(printRequest);
             printRequest.setAmount(amount);
-
-            // Display the details
             model.addAttribute("printRequest", printRequest);
-
-            // Save the printRequest to the database
-            printRequestRepository.save(printRequest);
-
-            return "submit";  // Redirect to submit.html (or your confirmation page)
+            return "submit";  // Show submit.html for review (no saving yet)
         } else {
             model.addAttribute("error", "Invalid Print Request. Please ensure all fields are filled correctly.");
-            return "error";  // Redirect to the error page
+            model.addAttribute("printRequest", printRequest); // Repopulate form
+            return "request"; // Return to request form with error
         }
     }
 
-    // This method handles the redirect to confirmation page after a successful submission
-    @GetMapping("/confirmation")
-    public String showConfirmation(Model model) {
+    // Handle confirmation (saving) when user clicks "Proceed"
+    @PostMapping("/confirmRequest")
+    public String confirmRequest(@ModelAttribute PrintRequest printRequest, Model model) {
+        printRequestRepository.save(printRequest);
         model.addAttribute("message", "Your print request has been successfully submitted! Please hand over the money to the admin when you collect your documents.");
-        return "confirmation";  // Redirect to confirmation.html page
+        return "confirmation";
     }
 
-    // Helper method to calculate the amount based on color and number of pages
+    // Calculate amount based on color and pages
     private double calculateAmount(PrintRequest printRequest) {
-        double amount = 0;
-        if ("color".equalsIgnoreCase(printRequest.getColor())) {
-            amount = 3 * printRequest.getPages();  // 3 rs per color page
-        } else if ("bw".equalsIgnoreCase(printRequest.getColor())) {
-            amount = 2 * printRequest.getPages();  // 2 rs per black and white page
-        }
-        return amount;
+        return "color".equalsIgnoreCase(printRequest.getColor())
+                ? COLOR_RATE * printRequest.getPages()
+                : BW_RATE * printRequest.getPages();
     }
 
-    // Helper method to validate print request
+    // Validate form fields
     private boolean isValidPrintRequest(PrintRequest printRequest) {
         return printRequest.getName() != null && !printRequest.getName().isEmpty()
             && printRequest.getDocumentName() != null && !printRequest.getDocumentName().isEmpty()
             && printRequest.getColor() != null && !printRequest.getColor().isEmpty()
             && printRequest.getSided() != null && !printRequest.getSided().isEmpty()
             && printRequest.getPages() > 0;
+    }
+
+    // Trim inputs to avoid errors from extra spaces
+    private void sanitizeInput(PrintRequest printRequest) {
+        if (printRequest.getName() != null)
+            printRequest.setName(printRequest.getName().trim());
+        if (printRequest.getDocumentName() != null)
+            printRequest.setDocumentName(printRequest.getDocumentName().trim());
+        if (printRequest.getColor() != null)
+            printRequest.setColor(printRequest.getColor().trim());
+        if (printRequest.getSided() != null)
+            printRequest.setSided(printRequest.getSided().trim());
     }
 }
