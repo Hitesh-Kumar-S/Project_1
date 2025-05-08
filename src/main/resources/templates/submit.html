@@ -135,11 +135,19 @@
     </table>
 
     <div class="btn-group">
+        <!-- Back Button to go to request page -->
         <form th:action="@{/request}" method="get">
             <button class="back-btn" type="submit">Back</button>
         </form>
 
-        <form th:action="@{/confirmation}" method="get">
+        <!-- Proceed Button that triggers saving data and redirects to success -->
+        <form th:action="@{/confirmRequest}" method="post">
+            <input type="hidden" name="name" th:value="${printRequest.name}" />
+            <input type="hidden" name="documentName" th:value="${printRequest.documentName}" />
+            <input type="hidden" name="pages" th:value="${printRequest.pages}" />
+            <input type="hidden" name="color" th:value="${printRequest.color}" />
+            <input type="hidden" name="sided" th:value="${printRequest.sided}" />
+            <input type="hidden" name="amount" th:value="${printRequest.amount}" />
             <button class="proceed-btn" type="submit">Proceed</button>
         </form>
     </div>
@@ -176,3 +184,4 @@
 
 </body>
 </html>
+
